@@ -8,13 +8,27 @@ import time
 import requests
 from bs4 import BeautifulSoup as bs
 import csv
+import os
+from utils import get_cvmde_path, write_to_db
 
-file_input = 'sverdl_objects.csv'
-file_output = 'google_smarks_avg_' + time.strftime('%Y%m%d%H%M%S') + '.csv'
+# Установить текущую папку как рабочую директорию
+work_dir = os.path.dirname(os.path.realpath(__file__))
+os.chdir(work_dir)
+
+# Названия файлов для входных/выходных данных
+f_input = 'sverdl_objects.csv'
+f_output = 'google-reviews-parser_avg_' + time.strftime('%Y%m%d%H%M%S') + '.csv'
+
+# Установить конечный путь для результатов
+cvmde_path = get_cvmde_path()
+output_dir = os.path.join(cvmde_path, 'data/scrapy/google-reviews-parser')
+os.makedirs(output_dir, exist_ok=True)
+
+file_output = os.path.join(output_dir, f_output)
 
 #приведение кластеризованной семантики к двумерному массиву
 semant_clast = []
-with open(file_input, 'r', newline='') as File_semant:
+with open(f_input, 'r', newline='', encoding='1251') as File_semant:
     reader = csv.reader(File_semant, delimiter=';')
     for row in reader:
         semant_clast.append(row)
@@ -26,7 +40,7 @@ for i in range(1, len(semant_clast)):
 
 #Создаем словарь: ключ - объект, значение - ['регион','город','категория']
 semant_dict = dict()
-with open(file_input, 'r', newline='') as File_region:
+with open(f_input, 'r', newline='', encoding='1251') as File_region:
     reader = csv.DictReader(File_region, delimiter=';')
     for line in reader:
         semant_dict[line["object"]] = [line["region"], line["city"], line["cat"], line["comerc"]]
@@ -34,7 +48,7 @@ with open(file_input, 'r', newline='') as File_region:
 headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0'}
 
 #создаем файл с оценками
-with open(file_output, 'w', newline='') as file:
+with open(f_output, 'w', newline='') as file:
     fields = ['region', 'city', 'cat', 'comerc', 'object', 'mark']
     writer = csv.DictWriter(file, fieldnames=fields, delimiter=';')
     writer.writeheader()
