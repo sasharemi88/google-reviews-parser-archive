@@ -10,7 +10,7 @@ import requests
 import csv
 import re
 import os
-from utils import get_cvmde_path, write_to_db
+#from utils import get_cvmde_path, write_to_db
 
 # Установить текущую папку как рабочую директорию
 work_dir = os.path.dirname(os.path.realpath(__file__))
@@ -21,9 +21,10 @@ f_input = 'sverdl_objects.csv'
 f_output = 'google-reviews-parser_3m_' + time.strftime('%Y%m%d%H%M%S') + '.csv'
 
 # Установить конечный путь для результатов
-cvmde_path = get_cvmde_path()
-output_dir = os.path.join(cvmde_path, 'data/scrapy/google-reviews-parser')
-os.makedirs(output_dir, exist_ok=True)
+#cvmde_path = get_cvmde_path()
+#output_dir = os.path.join(cvmde_path, 'data/scrapy/google-reviews-parser')
+#os.makedirs(output_dir, exist_ok=True)
+output_dir = ''
 
 file_output = os.path.join(output_dir, f_output)
 
@@ -62,9 +63,10 @@ with open(file_output, 'w', newline='') as file:
     writer = csv.DictWriter(file, fieldnames=fields, delimiter=';')
     writer.writeheader()
     for line in objects:
+        time.sleep(2)
         r = requests.get('https://www.google.com/maps/?q=' + line + ' ' + semant_dict[line][1] + '&oq=' + line + ' ' + semant_dict[line][1], headers = headers)
         page = r.text
-        m = re.compile('",[1-5],null,') # маска поиска оценки
+        m = re.compile('[1-5],null,') # маска поиска оценки
         i1 = page.count('месяц назад\\",null') # считаем количество вхождений фразы "месяц назад"
         if i1 > 0:
             for i in range(i1):
@@ -79,7 +81,7 @@ with open(file_output, 'w', newline='') as file:
                                  'cat':semant_dict[line][2],
                                  'comerc':semant_dict[line][3],
                                  'object':line,
-                                 'mark': page[dp+mp+2:dp+mp+3],
+                                 'mark': page[dp+mp:dp+mp+1],
                                  'date': t.strftime("%Y-%m")
                                  })
         #повторяем для оценок за 2 и 3 месяца назад
@@ -96,16 +98,18 @@ with open(file_output, 'w', newline='') as file:
                                  'cat':semant_dict[line][2],
                                  'comerc':semant_dict[line][3],
                                  'object':line,
-                                 'mark': page[dp+mp+2:dp+mp+3],
+                                 'mark': page[dp+mp:dp+mp+1],
                                  'date': t.strftime("%Y-%m")
                                  })
 
         i3=page.count('3 месяца назад\\",null')
         if i3 > 0:
             for i in range(i3):
-                dp = find_nth(page, '3 месяца назад\\",null', i)       
+                dp = find_nth(page, '3 месяца назад\\",null', i)
+                print(line, ' ', dp, ' ', i3)
                 mark_p = re.search(m, page[dp:])
                 mp = mark_p.start()
+                print(page[dp+mp:dp+mp+1])
                 now = datetime.now()
                 t = now-timedelta(90)
                 writer.writerow({'region':semant_dict[line][0],
@@ -113,8 +117,8 @@ with open(file_output, 'w', newline='') as file:
                                  'cat':semant_dict[line][2],
                                  'comerc':semant_dict[line][3],
                                  'object':line,
-                                 'mark': page[dp+mp+2:dp+mp+3],
+                                 'mark': page[dp+mp:dp+mp+1],
                                  'date': t.strftime("%Y-%m")
                                  })
-    time.sleep(1)
+
     

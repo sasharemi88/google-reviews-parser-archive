@@ -9,20 +9,21 @@ import requests
 from bs4 import BeautifulSoup as bs
 import csv
 import os
-from utils import get_cvmde_path, write_to_db
+#from utils import get_cvmde_path, write_to_db
 
 # Установить текущую папку как рабочую директорию
-work_dir = os.path.dirname(os.path.realpath(__file__))
-os.chdir(work_dir)
+#work_dir = os.path.dirname(os.path.realpath(__file__))
+#os.chdir(work_dir)
 
 # Названия файлов для входных/выходных данных
 f_input = 'sverdl_objects.csv'
 f_output = 'google-reviews-parser_avg_' + time.strftime('%Y%m%d%H%M%S') + '.csv'
 
 # Установить конечный путь для результатов
-cvmde_path = get_cvmde_path()
-output_dir = os.path.join(cvmde_path, 'data/scrapy/google-reviews-parser')
-os.makedirs(output_dir, exist_ok=True)
+#cvmde_path = get_cvmde_path()
+#output_dir = os.path.join(cvmde_path, 'data/scrapy/google-reviews-parser')
+output_dir = ''
+#os.makedirs(output_dir, exist_ok=True)
 
 file_output = os.path.join(output_dir, f_output)
 
@@ -67,7 +68,6 @@ with open(f_output, 'w', newline='') as file:
                          'object':line,
                          'mark': mark[s+1:f]})
         print(line + semant_dict[line][1] + ' ' + mark[s+1:f])
-        print(mark)
         print('____')
         time.sleep(1)
         
