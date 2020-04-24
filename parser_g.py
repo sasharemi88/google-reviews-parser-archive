@@ -49,7 +49,7 @@ with open(f_input, 'r', newline='', encoding='1251') as File_region:
 headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0'}
 
 #создаем файл с оценками
-with open(f_output, 'w', newline='') as file:
+with open(file_output, 'w', newline='') as file:
     fields = ['region', 'city', 'cat', 'comerc', 'object', 'mark']
     writer = csv.DictWriter(file, fieldnames=fields, delimiter=';')
     writer.writeheader()
