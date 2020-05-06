@@ -9,7 +9,8 @@ from datetime import datetime, timedelta
 import requests
 import csv
 import re
-
+import os
+from utils import get_cvmde_path, write_to_db
 
 #функция для поиска позиции n-го вхождения строки
 def find_nth(string, needle, n):
@@ -19,13 +20,24 @@ def find_nth(string, needle, n):
         n -= 1
     return start
 
-file_input = 'sverdl_objects.csv'
-file_output = 'google_marks_3m_' + time.strftime('%Y%m%d%H%M%S') + '.csv'
+# Установить текущую папку как рабочую директорию
+work_dir = os.path.dirname(os.path.realpath(__file__))
+os.chdir(work_dir)
+    
+f_input = 'sverdl_objects.csv'
+f_output = 'google_marks_3m_' + time.strftime('%Y%m%d%H%M%S') + '.csv'
 
+# Установить конечный путь для результатов
+cvmde_path = get_cvmde_path()
+output_dir = os.path.join(cvmde_path, 'data/scrapy/google-reviews-parser')
+#output_dir = ''
+os.makedirs(output_dir, exist_ok=True)
+
+file_output = os.path.join(output_dir, f_output)
 
 #приведение кластеризованной семантики к двумерному массиву
 semant_clast = []
-with open(file_input, 'r', newline='') as File_semant:
+with open(f_input, 'r', newline='') as File_semant:
     reader = csv.reader(File_semant, delimiter=';')
     for row in reader:
         semant_clast.append(row)
@@ -37,7 +49,7 @@ for i in range(1, len(semant_clast)):
 
 #Создаем словарь: ключ - объект, значение - ['регион', 'город', 'категория']
 semant_dict = dict()
-with open(file_input, 'r', newline='') as File_region:
+with open(f_input, 'r', newline='') as File_region:
     reader = csv.DictReader(File_region, delimiter=';')
     for line in reader:
         semant_dict[line["object"]] = [line["region"], line["city"], line["cat"], line["comerc"]]
@@ -46,7 +58,7 @@ headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) 
 
 
 with open(file_output, 'w', newline='', encoding='utf8') as file:
-    fields = ['region', 'city', 'cat', 'comerc', 'object', 'mark', 'date', 'mark_id']
+    fields = ['date','region', 'city', 'cat', 'comerc', 'object', 'mark', 'mark_date', 'mark_id']
     writer = csv.DictWriter(file, fieldnames=fields, delimiter=';')
     writer.writeheader()
     for line in objects:
@@ -69,13 +81,14 @@ with open(file_output, 'w', newline='', encoding='utf8') as file:
                 #записываем дату оценки
                 now = datetime.now()
                 t = now-timedelta(30)
-                writer.writerow({'region':semant_dict[line][0],
+                writer.writerow({'date': time.strftime('%Y-%m-%d'),
+                                 'region':semant_dict[line][0],
                                  'city':semant_dict[line][1],
                                  'cat':semant_dict[line][2],
                                  'comerc':semant_dict[line][3],
                                  'object':line,
                                  'mark': mark,
-                                 'date': t.strftime("%Y-%m"),
+                                 'mark_date': t.strftime("%Y-%m"),
                                  'mark_id': mark_id
                                  })
                 print(line)
@@ -97,13 +110,14 @@ with open(file_output, 'w', newline='', encoding='utf8') as file:
                 #записываем дату оценки
                 now = datetime.now()
                 t = now-timedelta(60)
-                writer.writerow({'region':semant_dict[line][0],
+                writer.writerow({'date': time.strftime('%Y-%m-%d'),
+                                 'region':semant_dict[line][0],
                                  'city':semant_dict[line][1],
                                  'cat':semant_dict[line][2],
                                  'comerc':semant_dict[line][3],
                                  'object':line,
                                  'mark': page[dp+mp+2:dp+mp+3],
-                                 'date': t.strftime("%Y-%m"),
+                                 'mark_date': t.strftime("%Y-%m"),
                                  'mark_id': mark_id
                                  })
 
@@ -122,13 +136,14 @@ with open(file_output, 'w', newline='', encoding='utf8') as file:
                 #записываем дату оценки
                 now = datetime.now()
                 t = now-timedelta(90)
-                writer.writerow({'region':semant_dict[line][0],
+                writer.writerow({'date': time.strftime('%Y-%m-%d'),
+                                 'region':semant_dict[line][0],
                                  'city':semant_dict[line][1],
                                  'cat':semant_dict[line][2],
                                  'comerc':semant_dict[line][3],
                                  'object':line,
                                  'mark': page[dp+mp+2:dp+mp+3],
-                                 'date': t.strftime("%Y-%m"),
+                                 'mark_date': t.strftime("%Y-%m"),
                                  'mark_id': mark_id
                                  })
     time.sleep(1)
