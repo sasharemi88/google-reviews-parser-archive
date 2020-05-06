@@ -34,8 +34,8 @@ with open(file_input, 'r', newline='') as File_region:
 headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:45.0) Gecko/20100101 Firefox/45.0'}
 
 #создаем файл с оценками
-with open(file_output, 'w', newline='') as file:
-    fields = ['region', 'city', 'cat', 'comerc', 'object', 'mark', 'cnt_marks']
+with open(file_output, 'w', newline='', encoding='utf8') as file:
+    fields = ['date', 'region', 'city', 'cat', 'comerc', 'object', 'mark', 'cnt_marks']
     writer = csv.DictWriter(file, fieldnames=fields, delimiter=';')
     writer.writeheader()
     for line in objects:
@@ -49,7 +49,8 @@ with open(file_output, 'w', newline='') as file:
         cnt = str(soup.select("span.hqzQac span a span")) #кол-во оценок
         sc = cnt.find('>')
         fc = cnt.find(' ', sc)
-        writer.writerow({'region':semant_dict[line][0],
+        writer.writerow({'date': time.strftime('%Y-%m-%d'),
+                         'region':semant_dict[line][0],
                          'city':semant_dict[line][1],
                          'cat':semant_dict[line][2],
                          'comerc':semant_dict[line][3],
